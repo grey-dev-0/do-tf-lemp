@@ -1,0 +1,8 @@
+# MariaDB 10.9 RedHat repository list - created 2022-10-11 08:28 UTC
+# https://mariadb.org/download/
+[mariadb]
+name = MariaDB
+baseurl = https://ftp.heanet.ie/mirrors/mariadb/yum/10.9/rhel9-amd64
+gpgkey=https://ftp.heanet.ie/mirrors/mariadb/yum/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+enabled=1
