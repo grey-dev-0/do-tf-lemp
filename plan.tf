@@ -1,22 +1,55 @@
 terraform {
+  required_version = ">= 1.0"
   required_providers {
     digitalocean = {
-      source = "digitalocean/digitalocean"
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.0"
     }
   }
 }
 
-variable "api_token" {}
-variable "private_key" {}
-variable "private_key_name" {}
-variable "droplet_name" {}
-variable "droplet_size" {}
-variable "db_password" {
-  type = string
-  sensitive = true
+variable "api_token" {
+  type        = string
+  description = "DigitalOcean API token"
+  sensitive   = true
 }
-variable "server_domain" {}
-variable "server_root" {}
+
+variable "private_key" {
+  type        = string
+  description = "Path to SSH private key file"
+  sensitive   = true
+}
+
+variable "private_key_name" {
+  type        = string
+  description = "Name of the SSH key in DigitalOcean"
+}
+
+variable "droplet_name" {
+  type        = string
+  description = "Name for the droplet"
+}
+
+variable "droplet_size" {
+  type        = string
+  description = "Size slug for the droplet"
+}
+
+variable "db_password" {
+  type        = string
+  description = "Database password"
+  sensitive   = true
+}
+
+variable "server_domain" {
+  type        = string
+  description = "Domain for the server"
+}
+
+variable "server_root" {
+  type        = string
+  description = "Root directory for the server"
+}
 
 provider "digitalocean" {
   token = var.api_token
@@ -32,6 +65,7 @@ resource "digitalocean_droplet" "lemp" {
   region = "fra1"
   size = var.droplet_size
   monitoring = true
+  graceful_shutdown  = false
   ssh_keys = [
     data.digitalocean_ssh_key.terraform.id
   ]

@@ -16,15 +16,15 @@ echo 'max_parallel_downloads=8' >>/etc/dnf/dnf.conf
 
 echo 'Installing required software..'
 yum install -y dnf-plugins-core git vim wget glibc-locale-source glibc-langpack-ar
-groupadd --gid 101 nginx
-useradd -M --uid 101 --gid 101 nginx
+groupadd --gid 9000 nginx
+useradd -M --uid 9000 --gid 9000 nginx
 yum install -y nginx nginx-mod-http-perl
 yum install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
 dnf config-manager --set-enabled remi
 mv resources/config/mariadb.repo /etc/yum.repos.d/
-yum install -y php80 php80-php-bcmath php80-php-cli php80-php-common php80-php-fpm php80-php-gd php80-php-intl php80-php-json php80-php-mbstring php80-php-mysqlnd php80-php-pdo php80-php-pecl-geoip php80-php-pecl-imagick php80-php-pecl-zip php80-php-xml php80-runtime php80-php-process php80-php-opcache mariadb-server nodejs
-ln -s -T /usr/bin/php80 /usr/bin/php
-ln -s -T /opt/remi/php80/root/usr/sbin/php-fpm /usr/bin/php-fpm
+yum install -y php81 php81-php-bcmath php81-php-cli php81-php-common php81-php-fpm php81-php-gd php81-php-intl php81-php-json php81-php-mbstring php81-php-mysqlnd php81-php-pdo php81-php-pecl-geoip php81-php-pecl-imagick php81-php-pecl-zip php81-php-xml php81-runtime php81-php-process php81-php-opcache mariadb-server nodejs
+ln -s -T /usr/bin/php81 /usr/bin/php
+ln -s -T /opt/remi/php81/root/usr/sbin/php-fpm /usr/bin/php-fpm
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 php -r "unlink('composer-setup.php');"
@@ -43,9 +43,9 @@ if [ -n "$db_password" ]; then
 fi
 mv resources/config/nginx.conf /etc/nginx/
 mv resources/config/app.conf /etc/nginx/conf.d/
-mv resources/config/php-fpm.conf /etc/opt/remi/php80/
-mv resources/config/www.conf /etc/opt/remi/php80/php-fpm.d/
-systemctl enable nginx php80-php-fpm mariadb
-systemctl start nginx php80-php-fpm mariadb
-chown nginx:nginx /var/opt/remi/php80/run/php-fpm/www.sock
+mv resources/config/php-fpm.conf /etc/opt/remi/php81/
+mv resources/config/www.conf /etc/opt/remi/php81/php-fpm.d/
+systemctl enable nginx php81-php-fpm mariadb
+systemctl start nginx php81-php-fpm mariadb
+chown nginx:nginx /var/opt/remi/php81/run/php-fpm/www.sock
 mysql < resources/mariadb_init.sql
