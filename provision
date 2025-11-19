@@ -1,4 +1,29 @@
 #! /bin/bash
+set -e
+set -o pipefail
+
+echo 'Creating swap space...'
+if ! swapon --show | grep -q '/swapfile'; then
+  fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048
+  chmod 600 /swapfile
+  mkswap /swapfile
+  swapon /swapfile
+  if ! grep -q '^/swapfile ' /etc/fstab; then
+    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  fi
+echo 'Swap created and enabled.'
+else
+  echo 'Swap already active.'
+fi
+
+echo 'Disabling SELinux...'
+if command -v setenforce &> /dev/null; then
+  setenforce 0 || true
+  sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config || true
+  echo 'SELinux disabled.'
+else
+  echo 'SELinux not available.'
+fi
 
 echo 'Initializing setup..'
 for arg in "$@"; do
@@ -8,16 +33,13 @@ for arg in "$@"; do
         declare $variable="$arg"
     fi
 done
-unalias cp
-unalias mv
+unalias cp || true
+unalias mv || true
 cd $(dirname "$0")
 echo 'fastestmirror=1' >>/etc/dnf/dnf.conf
-echo 'max_parallel_downloads=8' >>/etc/dnf/dnf.conf
-
-echo 'Installing required software..'
-yum install -y dnf-plugins-core git vim wget glibc-locale-source glibc-langpack-ar
-groupadd --gid 9000 nginx
-useradd -M --uid 9000 --gid 9000 nginx
+echo 'max_parallel_downloads=8' >>/etecho 'Installing required software..'
+groupadd --gid 9000 nginx || true
+useradd -M --uid 9000 --gid 9000 nginx || true
 yum install -y nginx nginx-mod-http-perl
 yum install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
 dnf config-manager --set-enabled remi
@@ -36,7 +58,7 @@ if [ -n "$server_domain" ]; then
     sed -i "s/__domain__/$server_domain/g" resources/config/app.conf
 fi
 if [ -n "$server_root" ]; then
-    sed -i "s/__root_dir__/$server_root/g" resources/config/app.conf
+    sed -i "s|__root_dir__|$server_root|g" resources/config/app.conf
 fi
 if [ -n "$db_password" ]; then
     sed -i "s/__db_password__/$db_password/g" resources/mariadb_init.sql
@@ -46,6 +68,7 @@ mv resources/config/app.conf /etc/nginx/conf.d/
 mv resources/config/php-fpm.conf /etc/opt/remi/php81/
 mv resources/config/www.conf /etc/opt/remi/php81/php-fpm.d/
 systemctl enable nginx php81-php-fpm mariadb
-systemctl start nginx php81-php-fpm mariadb
+systemctl start php81-php-fpm
+systemctl start nginx mariadb
 chown nginx:nginx /var/opt/remi/php81/run/php-fpm/www.sock
 mysql < resources/mariadb_init.sql
