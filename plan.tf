@@ -41,6 +41,12 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "root_password" {
+  type        = string
+  description = "Root password for the droplet"
+  sensitive   = true
+}
+
 variable "server_domain" {
   type        = string
   description = "Domain for the server"
@@ -91,7 +97,7 @@ resource "digitalocean_droplet" "lemp" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /root/provision",
-      "/root/provision --db_password ${var.db_password} --server_domain ${var.server_domain} --server_root ${var.server_root} > /root/provision.log 2>&1",
+      "/root/provision --db_password ${var.db_password} --root_password ${var.root_password} --server_domain ${var.server_domain} --server_root ${var.server_root} > /root/provision.log 2>&1",
       "rm -rf /root/provision /root/resources"
     ]
   }

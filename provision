@@ -11,7 +11,7 @@ if ! swapon --show | grep -q '/swapfile'; then
   if ! grep -q '^/swapfile ' /etc/fstab; then
     echo '/swapfile none swap sw 0 0' >> /etc/fstab
   fi
-echo 'Swap created and enabled.'
+  echo 'Swap created and enabled.'
 else
   echo 'Swap already active.'
 fi
@@ -37,9 +37,12 @@ unalias cp || true
 unalias mv || true
 cd $(dirname "$0")
 echo 'fastestmirror=1' >>/etc/dnf/dnf.conf
-echo 'max_parallel_downloads=8' >>/etecho 'Installing required software..'
+echo 'max_parallel_downloads=8' >>/etc/dnf/dnf.conf
+
+echo 'Installing required software..'
 groupadd --gid 9000 nginx || true
 useradd -M --uid 9000 --gid 9000 nginx || true
+yum update -y openssl openssh-server openssh-clients
 yum install -y nginx nginx-mod-http-perl
 yum install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
 dnf config-manager --set-enabled remi
@@ -62,6 +65,9 @@ if [ -n "$server_root" ]; then
 fi
 if [ -n "$db_password" ]; then
     sed -i "s/__db_password__/$db_password/g" resources/mariadb_init.sql
+fi
+if [ -n "$root_password" ]; then
+    echo "root:$root_password" | chpasswd
 fi
 mv resources/config/nginx.conf /etc/nginx/
 mv resources/config/app.conf /etc/nginx/conf.d/
